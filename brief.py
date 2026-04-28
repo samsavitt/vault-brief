@@ -12,8 +12,15 @@ BRIDGE_BASE = Path(
 ).expanduser()
 
 
+def resolve_bridge_path(arg):
+    p = Path(arg).expanduser()
+    if p.is_absolute():
+        return p
+    return BRIDGE_BASE / arg
+
+
 def make_bridge_path(name):
-    return BRIDGE_BASE / name
+    return resolve_bridge_path(name)
 
 
 HEADINGS = ["## Current goal", "## Next action", "## Open questions"]
@@ -40,9 +47,15 @@ def extract_section(text, heading):
 def main():
     if len(sys.argv) != 2:
         print("Usage: python brief.py <project-name>", file=sys.stderr)
+        print("       python brief.py /full/path/to/bridge", file=sys.stderr)
         sys.exit(1)
 
-    bridge_path = make_bridge_path(sys.argv[1])
+    bridge_path = resolve_bridge_path(sys.argv[1])
+
+    if not bridge_path.is_dir():
+        print(f"Error: bridge directory not found: {bridge_path}", file=sys.stderr)
+        sys.exit(1)
+
     snapshot = bridge_path / "context-snapshot.md"
     log_file = bridge_path / "log.md"
 
@@ -78,6 +91,7 @@ def main():
 
     log_text = log_file.read_text()
     entries = extract_log_entries(log_text)
+    print("---")
     print("LOG (LAST 3)")
     for entry in entries:
         print(entry)

@@ -43,10 +43,15 @@ def test_extract_log_entries_empty():
     assert entries == []
 
 
-def test_make_bridge_path_constructs_from_name():
-    p = brief_module.make_bridge_path("my-project")
+def test_resolve_bridge_path_constructs_from_name():
+    p = brief_module.resolve_bridge_path("my-project")
     assert p.name == "my-project"
     assert "sandbox-projects" in str(p)
+
+
+def test_resolve_bridge_path_absolute_bypasses_base(tmp_path):
+    p = brief_module.resolve_bridge_path(str(tmp_path))
+    assert p == tmp_path
 
 
 def run(tmp_path, name):
@@ -56,6 +61,14 @@ def run(tmp_path, name):
         capture_output=True,
         text=True,
         env=env,
+    )
+
+
+def run_path(path):
+    return subprocess.run(
+        [sys.executable, str(SCRIPT), str(path)],
+        capture_output=True,
+        text=True,
     )
 
 
@@ -134,6 +147,24 @@ def test_missing_log_exits_nonzero(tmp_path):
     assert "log.md not found" in result.stderr
 
 
+def test_full_path_arg(tmp_path):
+    bridge = tmp_path / "proj"
+    bridge.mkdir()
+    (bridge / "context-snapshot.md").write_text(FULL_SNAPSHOT)
+    (bridge / "log.md").write_text(FULL_LOG)
+    result = run_path(bridge)
+    assert result.returncode == 0
+    assert "CURRENT GOAL" in result.stdout
+    assert "Build something useful." in result.stdout
+    assert "LOG" in result.stdout
+
+
+def test_missing_bridge_dir_exits_nonzero(tmp_path):
+    result = run_path(tmp_path / "nonexistent")
+    assert result.returncode != 0
+    assert "bridge directory not found" in result.stderr
+
+
 def test_no_args_exits_nonzero():
     result = subprocess.run(
         [sys.executable, str(SCRIPT)],
@@ -142,3 +173,4 @@ def test_no_args_exits_nonzero():
     )
     assert result.returncode != 0
     assert "Usage:" in result.stderr
+    assert "/full/path/to/bridge" in result.stderr
