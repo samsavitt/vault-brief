@@ -176,7 +176,7 @@ Required — Current goal and Next action are stale post-v0.3. Log needs the v0.
 ---
 created: 2026-04-29
 session: vault-brief v0.4 — --html flag writes brief.html; add .gitignore
-status: pending
+status: applied
 ---
 
 # Vault Bridge Update Packet — v0.4
@@ -236,3 +236,63 @@ None.
 
 ## 7. Necessity
 Required — Current goal is stale post-v0.4. Log needs the v0.4 entry.
+
+---
+
+---
+created: 2026-04-29
+session: vault-brief v0.5 — cleanup pass: dead code, rename, format_plain
+status: pending
+---
+
+# Vault Bridge Update Packet — v0.5
+
+## 1. Target vault path
+`~/Documents/vaults/jarvis-one/projects/sandbox-projects/vault-brief/context-snapshot.md`
+
+## 2. Summary of repo changes
+Committed v0.5 (6680cd6). Refactor-only pass — no new features. Changes to `brief.py` and `test_brief.py`:
+- `make_bridge_path` removed — was a dead wrapper around `resolve_bridge_path` with no remaining callers since v0.2.
+- `l` renamed to `line` in `content_to_html` list comprehensions — improves readability (`l` is ambiguous with `1` in many fonts).
+- `format_plain(sections, entries)` extracted from inline code in `main()` — plain-text output now lives in its own pure function, matching the pattern of `format_markdown` and `format_html`. `main()` plain-text branch reduced to one line: `print(format_plain(sections, entries), end="")`.
+- `test_brief.py` updated to 17 tests (up from 16): added `test_format_plain_output` unit test for the new function.
+
+## 3. CLI usage (unchanged from v0.4)
+
+```
+python brief.py <project-name> [--markdown] [--html]
+python brief.py /full/path/to/bridge [--markdown] [--html]
+```
+
+No behavior changes — this was a code clarity pass only.
+
+## 4. Proposed context-snapshot.md edits
+
+### Edit 1 — Current goal
+
+Before:
+```
+vault-brief v0.4 shipped. Added --html flag that writes brief.html to cwd. Three output modes: plain-text (default), --markdown (stdout), --html (file). Project remains active for learning-focused improvements.
+```
+
+After:
+```
+vault-brief v0.5 shipped. Refactor/cleanup pass: removed dead code, improved readability, extracted format_plain. No behavior changes. Project remains active for learning-focused improvements.
+```
+
+### Edit 2 — Next action (unchanged)
+```
+No active task. Awaiting next improvement idea.
+```
+
+## 5. Proposed log.md entry
+
+```
+## 2026-04-29 v0.5 | Cleanup pass. Removed make_bridge_path, renamed l→line, extracted format_plain. Commit 6680cd6. 17/17 tests pass.
+```
+
+## 6. Open questions
+None.
+
+## 7. Necessity
+Required — Current goal is stale post-v0.5. Log needs the v0.5 entry.
