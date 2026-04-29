@@ -112,6 +112,20 @@ Build something useful.
 Write the tests.
 """
 
+EMPTY_REQUIRED_SECTIONS = """\
+## Current goal
+
+## Next action
+
+## Open questions
+"""
+
+NO_REQUIRED_HEADINGS = """\
+# Context
+
+No required headings here.
+"""
+
 FULL_LOG = """\
 ## 2026-04-28 v0 shipped | brief.py done.
 
@@ -141,6 +155,24 @@ def test_missing_heading_exits_nonzero(tmp_path):
     make_bridge(tmp_path, "proj", MISSING_HEADING, FULL_LOG)
     result = run(tmp_path, "proj")
     assert result.returncode != 0
+    assert "## Open questions" in result.stderr
+
+
+def test_empty_required_sections_succeed_with_blank_content(tmp_path):
+    make_bridge(tmp_path, "proj", EMPTY_REQUIRED_SECTIONS, FULL_LOG)
+    result = run(tmp_path, "proj")
+    assert result.returncode == 0
+    assert "CURRENT GOAL" in result.stdout
+    assert "NEXT ACTION" in result.stdout
+    assert "OPEN QUESTIONS" in result.stdout
+
+
+def test_missing_all_required_headings_reports_each_heading(tmp_path):
+    make_bridge(tmp_path, "proj", NO_REQUIRED_HEADINGS, FULL_LOG)
+    result = run(tmp_path, "proj")
+    assert result.returncode != 0
+    assert "## Current goal" in result.stderr
+    assert "## Next action" in result.stderr
     assert "## Open questions" in result.stderr
 
 
@@ -238,3 +270,16 @@ def test_no_args_exits_nonzero():
     assert "/full/path/to/bridge" in result.stderr
     assert "[--markdown]" in result.stderr
     assert "[--html]" in result.stderr
+
+
+def test_flags_without_project_show_usage(tmp_path):
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--html"],
+        capture_output=True,
+        text=True,
+        cwd=tmp_path,
+    )
+    assert result.returncode != 0
+    assert "Usage:" in result.stderr
+    assert "/full/path/to/bridge" in result.stderr
+    assert not (tmp_path / "brief.html").exists()
