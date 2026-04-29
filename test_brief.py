@@ -49,6 +49,16 @@ def test_resolve_bridge_path_constructs_from_name():
     assert "sandbox-projects" in str(p)
 
 
+def test_format_plain_output():
+    sections = {"## Current goal": "Do something.", "## Next action": "Do next."}
+    entries = ["2026-04-29 entry one"]
+    result = brief_module.format_plain(sections, entries)
+    assert "CURRENT GOAL" in result
+    assert "Do something." in result
+    assert "LOG (LAST 3)" in result
+    assert "entry one" in result
+
+
 def test_resolve_bridge_path_absolute_bypasses_base(tmp_path):
     p = brief_module.resolve_bridge_path(str(tmp_path))
     assert p == tmp_path

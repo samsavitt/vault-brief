@@ -20,9 +20,6 @@ def resolve_bridge_path(arg):
     return BRIDGE_BASE / arg
 
 
-def make_bridge_path(name):
-    return resolve_bridge_path(name)
-
 
 HEADINGS = ["## Current goal", "## Next action", "## Open questions"]
 
@@ -39,8 +36,8 @@ def extract_log_entries(text, n=3):
 
 def content_to_html(text):
     lines = text.splitlines()
-    list_items = [l[2:] for l in lines if l.startswith("- ")]
-    non_list = [l for l in lines if l and not l.startswith("- ")]
+    list_items = [line[2:] for line in lines if line.startswith("- ")]
+    non_list = [line for line in lines if line and not line.startswith("- ")]
     if list_items and not non_list:
         items = "".join(f"<li>{html.escape(item)}</li>" for item in list_items)
         return f"<ul>{items}</ul>"
@@ -79,6 +76,21 @@ def format_markdown(name, sections, entries):
     lines.append("## Recent log")
     for entry in entries:
         lines.append(f"- {entry}")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def format_plain(sections, entries):
+    lines = []
+    for heading, content in sections.items():
+        label = heading.lstrip("# ").upper()
+        lines.append(label)
+        lines.append(content)
+        lines.append("")
+    lines.append("---")
+    lines.append("LOG (LAST 3)")
+    for entry in entries:
+        lines.append(entry)
     lines.append("")
     return "\n".join(lines)
 
@@ -144,16 +156,7 @@ def main():
     elif markdown:
         print(format_markdown(bridge_path.name, sections, entries))
     else:
-        for heading, content in sections.items():
-            label = heading.lstrip("# ").upper()
-            print(label)
-            print(content)
-            print()
-        print("---")
-        print("LOG (LAST 3)")
-        for entry in entries:
-            print(entry)
-        print()
+        print(format_plain(sections, entries), end="")
 
 
 if __name__ == "__main__":
