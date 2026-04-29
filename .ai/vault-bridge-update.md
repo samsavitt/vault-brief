@@ -111,3 +111,62 @@ None.
 
 ## 6. Necessity
 Required — Current goal is stale post-v0.2. Log needs the v0.2 entry. Applied synthetically in the same vault session.
+
+---
+
+---
+created: 2026-04-29
+session: vault-brief v0.3 — --markdown flag for Markdown report output
+status: pending
+---
+
+# Vault Bridge Update Packet — v0.3
+
+## 1. Target vault path
+`~/Documents/vaults/jarvis-one/projects/sandbox-projects/vault-brief/context-snapshot.md`
+
+## 2. Summary of repo changes
+Committed v0.3 (1889bfa). Changes to `brief.py` and `test_brief.py`:
+- `format_markdown(name, sections, entries)` — new pure function; builds a Markdown string with a `# vault-brief: <name>` title, `##` headings for each snapshot section, and a `## Recent log` block with bulleted entries.
+- Arg parsing in `main()` refactored: filters `--markdown` out of `sys.argv` before resolving the bridge arg, so the flag is accepted in any position without argparse.
+- Usage text updated to show `[--markdown]` on both lines.
+- Plain-text output path unchanged.
+- `test_brief.py` updated to 13 tests (up from 12): `run()` helper gained `*flags` for passing optional flags; added `test_markdown_output` asserting title, `##` headings, bullet-prefixed log entries, and absence of uppercase plain-text labels; updated `test_no_args_exits_nonzero` to assert `[--markdown]` in stderr. All 13 pass.
+
+## 3. Proposed context-snapshot.md edits
+
+### Edit 1 — Current goal
+
+Before:
+```
+vault-brief v0.2 shipped. Usability improvements: full-path arg support, clearer error messages, improved usage text, output separator. Project remains active for learning-focused improvements.
+```
+
+After:
+```
+vault-brief v0.3 shipped. Added --markdown flag for Markdown report output. Project remains active for learning-focused improvements.
+```
+
+### Edit 2 — Next action
+
+Before:
+```
+Decide v0.3 scope: candidates are output formatting, multi-project support, or retire and apply lessons to job-agent.
+```
+
+After:
+```
+No active task. Awaiting next improvement idea.
+```
+
+## 4. Proposed log.md entry
+
+```
+## 2026-04-29 v0.3 | --markdown flag added. Markdown output with title, ## headings, bulleted log. Commit 1889bfa. 13/13 tests pass.
+```
+
+## 5. Open questions
+None.
+
+## 6. Necessity
+Required — Current goal and Next action are stale post-v0.3. Log needs the v0.3 entry.
