@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import html
 import os
 import re
 import sys
@@ -36,6 +37,38 @@ def extract_log_entries(text, n=3):
     return entries
 
 
+def content_to_html(text):
+    lines = text.splitlines()
+    list_items = [l[2:] for l in lines if l.startswith("- ")]
+    non_list = [l for l in lines if l and not l.startswith("- ")]
+    if list_items and not non_list:
+        items = "".join(f"<li>{html.escape(item)}</li>" for item in list_items)
+        return f"<ul>{items}</ul>"
+    return f"<p>{html.escape(text)}</p>"
+
+
+def format_html(name, sections, entries):
+    parts = [
+        "<!DOCTYPE html>",
+        '<html lang="en">',
+        "<head>",
+        '  <meta charset="utf-8">',
+        f"  <title>vault-brief: {html.escape(name)}</title>",
+        "</head>",
+        "<body>",
+        f"<h1>vault-brief: {html.escape(name)}</h1>",
+    ]
+    for heading, content in sections.items():
+        label = heading.lstrip("# ")
+        parts.append(f"<h2>{html.escape(label)}</h2>")
+        parts.append(content_to_html(content))
+    parts.append("<h2>Recent log</h2>")
+    items = "".join(f"<li>{html.escape(e)}</li>" for e in entries)
+    parts.append(f"<ul>{items}</ul>")
+    parts += ["</body>", "</html>"]
+    return "\n".join(parts)
+
+
 def format_markdown(name, sections, entries):
     lines = [f"# vault-brief: {name}", ""]
     for heading, content in sections.items():
@@ -60,11 +93,12 @@ def extract_section(text, heading):
 
 def main():
     args = sys.argv[1:]
+    html_mode = "--html" in args
     markdown = "--markdown" in args
-    args = [a for a in args if a != "--markdown"]
+    args = [a for a in args if a not in ("--html", "--markdown")]
     if len(args) != 1:
-        print("Usage: python brief.py <project-name> [--markdown]", file=sys.stderr)
-        print("       python brief.py /full/path/to/bridge [--markdown]", file=sys.stderr)
+        print("Usage: python brief.py <project-name> [--markdown] [--html]", file=sys.stderr)
+        print("       python brief.py /full/path/to/bridge [--markdown] [--html]", file=sys.stderr)
         sys.exit(1)
 
     bridge_path = resolve_bridge_path(args[0])
@@ -103,7 +137,11 @@ def main():
     log_text = log_file.read_text()
     entries = extract_log_entries(log_text)
 
-    if markdown:
+    if html_mode:
+        out = Path("brief.html")
+        out.write_text(format_html(bridge_path.name, sections, entries))
+        print(f"Wrote {out}")
+    elif markdown:
         print(format_markdown(bridge_path.name, sections, entries))
     else:
         for heading, content in sections.items():

@@ -117,7 +117,7 @@ Required — Current goal is stale post-v0.2. Log needs the v0.2 entry. Applied 
 ---
 created: 2026-04-29
 session: vault-brief v0.3 — --markdown flag for Markdown report output
-status: pending
+status: applied
 ---
 
 # Vault Bridge Update Packet — v0.3

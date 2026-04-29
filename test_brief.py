@@ -54,13 +54,14 @@ def test_resolve_bridge_path_absolute_bypasses_base(tmp_path):
     assert p == tmp_path
 
 
-def run(tmp_path, name, *flags):
+def run(tmp_path, name, *flags, cwd=None):
     env = {**os.environ, "VAULT_BRIDGE_BASE": str(tmp_path)}
     return subprocess.run(
         [sys.executable, str(SCRIPT), name, *flags],
         capture_output=True,
         text=True,
         env=env,
+        cwd=cwd,
     )
 
 
@@ -165,6 +166,34 @@ def test_missing_bridge_dir_exits_nonzero(tmp_path):
     assert "bridge directory not found" in result.stderr
 
 
+def test_content_to_html_list():
+    result = brief_module.content_to_html("- Foo\n- Bar")
+    assert "<ul>" in result
+    assert "<li>Foo</li>" in result
+
+
+def test_content_to_html_prose():
+    result = brief_module.content_to_html("Some text")
+    assert result.startswith("<p>")
+
+
+def test_html_output(tmp_path):
+    make_bridge(tmp_path, "proj", FULL_SNAPSHOT, FULL_LOG)
+    result = run(tmp_path, "proj", "--html", cwd=tmp_path)
+    assert result.returncode == 0
+    assert "Wrote brief.html" in result.stdout
+    html_file = tmp_path / "brief.html"
+    assert html_file.exists()
+    content = html_file.read_text()
+    assert "<title>vault-brief: proj</title>" in content
+    assert "<h1>vault-brief: proj</h1>" in content
+    assert "<h2>Current goal</h2>" in content
+    assert "Build something useful." in content
+    assert "<h2>Recent log</h2>" in content
+    assert "v0 shipped" in content
+    assert "<ul>" in content
+
+
 def test_markdown_output(tmp_path):
     make_bridge(tmp_path, "proj", FULL_SNAPSHOT, FULL_LOG)
     result = run(tmp_path, "proj", "--markdown")
@@ -189,3 +218,4 @@ def test_no_args_exits_nonzero():
     assert "Usage:" in result.stderr
     assert "/full/path/to/bridge" in result.stderr
     assert "[--markdown]" in result.stderr
+    assert "[--html]" in result.stderr
