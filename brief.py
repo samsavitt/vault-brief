@@ -107,6 +107,9 @@ def main():
     args = sys.argv[1:]
     html_mode = "--html" in args
     markdown = "--markdown" in args
+    if html_mode and markdown:
+        print("Error: --html and --markdown cannot be used together.", file=sys.stderr)
+        sys.exit(1)
     args = [a for a in args if a not in ("--html", "--markdown")]
     if len(args) != 1:
         print("Usage: python brief.py <project-name> [--markdown] [--html]", file=sys.stderr)

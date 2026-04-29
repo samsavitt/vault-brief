@@ -218,6 +218,15 @@ def test_markdown_output(tmp_path):
     assert "CURRENT GOAL" not in result.stdout
 
 
+def test_html_and_markdown_flags_conflict(tmp_path):
+    make_bridge(tmp_path, "proj", FULL_SNAPSHOT, FULL_LOG)
+    result = run(tmp_path, "proj", "--html", "--markdown", cwd=tmp_path)
+    assert result.returncode != 0
+    assert result.stdout == ""
+    assert "Error: --html and --markdown cannot be used together." in result.stderr
+    assert not (tmp_path / "brief.html").exists()
+
+
 def test_no_args_exits_nonzero():
     result = subprocess.run(
         [sys.executable, str(SCRIPT)],
