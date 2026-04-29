@@ -36,6 +36,20 @@ def extract_log_entries(text, n=3):
     return entries
 
 
+def format_markdown(name, sections, entries):
+    lines = [f"# vault-brief: {name}", ""]
+    for heading, content in sections.items():
+        label = heading.lstrip("# ")
+        lines.append(f"## {label}")
+        lines.append(content)
+        lines.append("")
+    lines.append("## Recent log")
+    for entry in entries:
+        lines.append(f"- {entry}")
+    lines.append("")
+    return "\n".join(lines)
+
+
 def extract_section(text, heading):
     pattern = rf"^{re.escape(heading)}\s*\n(.*?)(?=\n## |\Z)"
     match = re.search(pattern, text, re.MULTILINE | re.DOTALL)
@@ -45,12 +59,15 @@ def extract_section(text, heading):
 
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: python brief.py <project-name>", file=sys.stderr)
-        print("       python brief.py /full/path/to/bridge", file=sys.stderr)
+    args = sys.argv[1:]
+    markdown = "--markdown" in args
+    args = [a for a in args if a != "--markdown"]
+    if len(args) != 1:
+        print("Usage: python brief.py <project-name> [--markdown]", file=sys.stderr)
+        print("       python brief.py /full/path/to/bridge [--markdown]", file=sys.stderr)
         sys.exit(1)
 
-    bridge_path = resolve_bridge_path(sys.argv[1])
+    bridge_path = resolve_bridge_path(args[0])
 
     if not bridge_path.is_dir():
         print(f"Error: bridge directory not found: {bridge_path}", file=sys.stderr)
@@ -83,19 +100,22 @@ def main():
             print(f"Error: required heading not found: {h}", file=sys.stderr)
         sys.exit(1)
 
-    for heading, content in sections.items():
-        label = heading.lstrip("# ").upper()
-        print(label)
-        print(content)
-        print()
-
     log_text = log_file.read_text()
     entries = extract_log_entries(log_text)
-    print("---")
-    print("LOG (LAST 3)")
-    for entry in entries:
-        print(entry)
-    print()
+
+    if markdown:
+        print(format_markdown(bridge_path.name, sections, entries))
+    else:
+        for heading, content in sections.items():
+            label = heading.lstrip("# ").upper()
+            print(label)
+            print(content)
+            print()
+        print("---")
+        print("LOG (LAST 3)")
+        for entry in entries:
+            print(entry)
+        print()
 
 
 if __name__ == "__main__":

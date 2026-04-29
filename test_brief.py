@@ -54,10 +54,10 @@ def test_resolve_bridge_path_absolute_bypasses_base(tmp_path):
     assert p == tmp_path
 
 
-def run(tmp_path, name):
+def run(tmp_path, name, *flags):
     env = {**os.environ, "VAULT_BRIDGE_BASE": str(tmp_path)}
     return subprocess.run(
-        [sys.executable, str(SCRIPT), name],
+        [sys.executable, str(SCRIPT), name, *flags],
         capture_output=True,
         text=True,
         env=env,
@@ -165,6 +165,20 @@ def test_missing_bridge_dir_exits_nonzero(tmp_path):
     assert "bridge directory not found" in result.stderr
 
 
+def test_markdown_output(tmp_path):
+    make_bridge(tmp_path, "proj", FULL_SNAPSHOT, FULL_LOG)
+    result = run(tmp_path, "proj", "--markdown")
+    assert result.returncode == 0
+    assert "# vault-brief: proj" in result.stdout
+    assert "## Current goal" in result.stdout
+    assert "## Next action" in result.stdout
+    assert "## Open questions" in result.stdout
+    assert "## Recent log" in result.stdout
+    assert "- 2026-04-28" in result.stdout
+    assert "v0 shipped" in result.stdout
+    assert "CURRENT GOAL" not in result.stdout
+
+
 def test_no_args_exits_nonzero():
     result = subprocess.run(
         [sys.executable, str(SCRIPT)],
@@ -174,3 +188,4 @@ def test_no_args_exits_nonzero():
     assert result.returncode != 0
     assert "Usage:" in result.stderr
     assert "/full/path/to/bridge" in result.stderr
+    assert "[--markdown]" in result.stderr
