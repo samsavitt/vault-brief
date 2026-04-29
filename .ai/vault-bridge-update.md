@@ -242,7 +242,7 @@ Required — Current goal is stale post-v0.4. Log needs the v0.4 entry.
 ---
 created: 2026-04-29
 session: vault-brief v0.5 — cleanup pass: dead code, rename, format_plain
-status: pending
+status: applied
 ---
 
 # Vault Bridge Update Packet — v0.5
